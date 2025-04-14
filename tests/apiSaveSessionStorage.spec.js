@@ -1,38 +1,39 @@
 import { test, expect } from '@playwright/test';
+let webContext;
 
-test('built-in locators', async ({page})=>
+test.beforeAll(async ({browser})=>
 {
-    await page.goto("https://rahulshettyacademy.com/angularpractice/");
-    await page.getByLabel("Check me out if you Love IceCreams!").check();
-    await page.getByLabel("Employed").check();
-    await page.getByLabel("Gender").selectOption("Female");
-    await page.getByPlaceholder("Password").fill("Test1234");
-    await page.getByRole("button", {name:'Submit'}).click();
-    await page.getByText("Success! The Form has been submitted successfully!.").isVisible();
+    const context = await browser.newContext();
+    const page = await context.newPage();   
 
-    await page.getByRole("link",{name: 'Shop'}).click();
-    await page.locator("app-card").filter({hasText: 'Nokia Edge'}).getByRole("button").click();
-});
+    const userName = page.getByPlaceholder("email@example.com");
+    const passWord = page.getByPlaceholder("enter your passsword");
+    const logIn = page.getByRole("button",{name:"Login"});
 
-test('redoing old test with builtin locators', async ({page})=>
+
+    await page.goto("https://rahulshettyacademy.com/client");
+    await userName.fill("lokryd@gmail.com");
+    await passWord.fill("Test1234");
+    await logIn.click();
+    await page.locator(".card-body b").first().waitFor();
+    await context.storageState({path: 'state.json'}); //save the state of the browser context to a file
+
+    webContext = await browser.newContext({storageState: 'state.json'}); //create a new context with the saved state
+
+    
+})
+
+
+test('test 1', async ({})=>
     {
-        const userName = page.getByPlaceholder("email@example.com");
-        const passWord = page.getByPlaceholder("enter your passsword");
-        const logIn = page.getByRole("button",{name:"Login"});
+        const page = await webContext.newPage(); //create a new page in the context with the saved state
         const products = page.locator(".card-body");
         const productName = "ADIDAS ORIGINAL";
         const email = "lokryd@gmail.com";
-        const pass = "Test1234";
-    
-    
+        
         await page.goto("https://rahulshettyacademy.com/client");
-     
-        await userName.fill(email);
-        await passWord.fill(pass);
-        await logIn.click();
-        await page.locator(".card-body b").first().waitFor(); // or wait for the first element to be loaded
-
-        await page.locator(".card-body").filter({hasText: productName}).getByRole('button',{name:'Add To Cart'}).click();
+    
+        await products.filter({hasText: productName}).getByRole('button',{name:'Add To Cart'}).click();
         await page.getByRole("listitem").getByRole("button",{name: "Cart"}).click();
         
         await page.locator("div li").first().waitFor(); //waiting for cart page to load before checking isVisible, because it doesn't have an automatic wait
@@ -78,25 +79,17 @@ test('redoing old test with builtin locators', async ({page})=>
         expect (orderNumber.includes(OrderIDDetailsPage)).toBeTruthy;
     });
 
-test('handling calendars', async ({page})=>
-    {
-        const monthNumber = "6";
-        const date = "15";
-        const year = "2027";
-        const expectedList = [monthNumber, date, year];
+    test('test 2', async ({})=>
+        {
+            const page = await webContext.newPage(); //create a new page in the context with the saved state
+            const productTitles = page.locator(".card-body b");
         
-        await page.goto("https://rahulshettyacademy.com/seleniumPractise/#/offers");
-
-        await page.locator('.react-date-picker__inputGroup').click();
-        await page.locator('.react-calendar__navigation__label__labelText--from').click();
-        await page.locator('.react-calendar__navigation__label__labelText--from').click();
-        await page.getByText(year).click();
-        await page.locator('.react-calendar__year-view__months__month').nth(Number(monthNumber)-1).click();
-        await page.locator('//abbr[text()="'+date+'"]').click();
-
-        const fullDate = await page.locator('[type="date"]').inputValue();
-        console.log(fullDate);
-        expect(fullDate).toEqual(year+'-'+'0'+monthNumber+'-'+date);
-        console.log(year+'-'+'0'+monthNumber+'-'+date);
-
-    });
+        
+            await page.goto("https://rahulshettyacademy.com/client");
+            
+            await productTitles.first().waitFor(); // or wait for the first element to be loaded
+        
+            //print all titles
+            const allTitles = await productTitles.allTextContents();
+            console.log(allTitles);
+        });
