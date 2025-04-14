@@ -2,6 +2,7 @@ const { test, expect, request } = require('@playwright/test');
 const { APIUtils } = require('./Utils/APIUtils.js'); // Import APIUtils class
 const loginPayLoad = {userEmail: "lokryd@gmail.com", userPassword: "Test1234"};
 const orderPayLoad = {orders: [{country: "Cuba", productOrderedId: "67a8df1ac0d3e6622a297ccb"}]};
+const fakePayLoadOrders = {data:[],message:"No Orders"};
 let response;
 
 test.beforeAll(async ()=>
@@ -41,3 +42,38 @@ test('Place order', async ({page}) =>
         const OrderIDDetailsPage = await page.locator(".col-text").textContent();
         expect (response.orderID.includes(OrderIDDetailsPage)).toBeTruthy;
     });
+
+    test('Check message for no orders', async ({page}) =>
+        {
+            
+            page.addInitScript(value => {
+                window.localStorage.setItem('token', value);
+            }, response.token); // Set token in local storage
+    
+            await page.goto("https://rahulshettyacademy.com/client");
+
+            page.route("https://rahulshettyacademy.com/api/ecom/order/get-orders-for-customer/*",
+            async route=>
+            {
+                //intercepting the response 
+                const response = await page.request.fetch(route.request());
+                let body = JSON.stringify(fakePayLoadOrders);
+                route.fulfill(
+                    {
+                        response,
+                        body,
+                    }
+                )
+
+            }
+        )
+       
+    
+            //go to orders
+            await page.getByRole('listitem').getByRole('button',{name: 'ORDERS'}).click();
+            await page.getByText("Go Back to Cart").waitFor();
+            //await page.pause();
+            const noOrdersText = await page.locator('.mt-4').textContent();
+            console.log(noOrdersText);
+            expect(noOrdersText).toContain("You have No Orders");
+        });
