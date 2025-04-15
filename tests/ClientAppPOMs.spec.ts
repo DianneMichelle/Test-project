@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { POManager } from '../pageobjects/POManager'; 
+import { POManager } from '../pageobjectsTS/POManager'; 
 
 
 test('task 1', async ({page})=>
@@ -47,14 +47,14 @@ test('e2e test', async ({page})=>
         await loginPage.validLogin(email,pass);
         await dashboardPage.searchForProduct(productName);
         await dashboardPage.navigateToCart();
-        await cartPage.validateProduct();
+        await cartPage.validateProduct(productName);
         await cartPage.navigateToCheckout();
         await checkoutPage.fillShippingInfo(email);
         await checkoutPage.fillPersonalInfo();
         await checkoutPage.enterAndValidateCoupon();
         await checkoutPage.submitOrder();
         await checkoutPage.validateSuccessMessage();
-        const orderNumber = await ordersPage.getOrderNumberFromSuccessMessage();
+        const orderNumber: any = await ordersPage.getOrderNumberFromSuccessMessage();
         await ordersPage.goToOrdersPage();
         await ordersPage.findOrderInList(orderNumber);
         await ordersPage.validateOrderDetails(orderNumber);
