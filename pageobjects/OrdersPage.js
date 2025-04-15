@@ -14,8 +14,9 @@ export class OrdersPage
 
 async getOrderNumberFromSuccessMessage()
 {
-    const orderNumber = await(this.page.locator('.em-spacer-1 .ng-star-inserted')).textContent();
-    console.log(orderNumber);
+    this.orderNumber = await(this.page.locator('.em-spacer-1 .ng-star-inserted')).textContent();
+    console.log(this.orderNumber);
+    return this.orderNumber;
 }
 
 async goToOrdersPage()
@@ -31,7 +32,7 @@ async findOrderInList()
         for(let i=0; i < await rows.count(); ++i)
             {
                 const OrderIDRowText = await rows.nth(i).locator("th").textContent();
-                if(orderNumber.includes(OrderIDRowText))
+                if(this.orderNumber.includes(OrderIDRowText))
                     {
                         await rows.nth(i).locator("button").first().click();
                         break;
@@ -41,8 +42,8 @@ async findOrderInList()
 
 async validateOrderDetails()
 {
-    const OrderIDDetailsPage = await page.locator(".col-text").textContent();
-    expect (orderNumber.includes(OrderIDDetailsPage)).toBeTruthy;
+    const OrderIDDetailsPage = await this.page.locator(".col-text").textContent();
+    expect (this.orderNumber.includes(OrderIDDetailsPage)).toBeTruthy;
 }
 
 }

@@ -54,10 +54,10 @@ test.only('e2e test', async ({page})=>
         await checkoutPage.enterAndValidateCoupon();
         await checkoutPage.submitOrder();
         await checkoutPage.validateSuccessMessage();
-        await ordersPage.getOrderNumberFromSuccessMessage();
+        const orderNumber = await ordersPage.getOrderNumberFromSuccessMessage();
         await ordersPage.goToOrdersPage();
-        //await ordersPage.findOrderInList();
-        //await ordersPage.validateOrderDetails();
+        await ordersPage.findOrderInList(orderNumber);
+        await ordersPage.validateOrderDetails(orderNumber);
 
 
     });
